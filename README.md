@@ -1,10 +1,8 @@
 # CSC-365-Group-Project
-
-*Contributors* 
 _______________________
+**Contributors**
 Madison : mlope310@calpoly.edu
 add you name and email -
-
-*Project Description*
 _______________________
+**Project Description**
 This is our project.
