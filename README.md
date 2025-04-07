@@ -3,7 +3,8 @@ _______________________
 **Contributors**
 
 Madison : mlope310@calpoly.edu
-add you name and email -
+
+add your name and email -
 _______________________
 **Project Description**
 
