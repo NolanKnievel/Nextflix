@@ -4,6 +4,7 @@ _______________________
 
 Madison : mlope310@calpoly.edu
 
+Vardaan : vkumar07@calpoly.edu
 add your name and email -
 _______________________
 **Project Description**
