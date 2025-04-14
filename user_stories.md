@@ -22,7 +22,13 @@ As a teenager, I care about what others think about a movie before I decide if I
 **EXCEPTIONS**
 
 *Exception: Leaving review editing page without saving.*
-If a user tries to leave without saving their review, the editing box should remind the user that if they leave without saving, the review will be erased.
+If a user tries to leave without saving their review, the site should remind the user that if they leave without saving, the review will be erased.
+
+*Exception: Posting a review without a rating*
+If a user attempts to post a review without selecting a rating, the site should prompt them to choose a rating before submitting, as ratings are required to help others evaluate the movie.
+
+*Exception: Adding a duplicate movie to watchlist*
+If a user tries to add a movie to their watchlist that is already there, the site should notify them that the movie is already saved and prevent duplicate entries.
 
 *Exception: Searching for a movie that does not exist on our platform.*
 If a user tries to find a movie that does not exist, the site should alert them that it cannot be found, and give them the option to post the film to the site. 
