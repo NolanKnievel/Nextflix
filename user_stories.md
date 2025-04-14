@@ -11,7 +11,13 @@ As a college student enthusiast, I want to know other people's thoughts on movie
 As a social person, I want to see what movies my friends are watching so I can stay in the know. 
 
 As a user, I want to edit or delete my reviews so I can update my opinions
----
+
+As a movie enthusiast, I want to watch new movies that are similar to other ones I have watched previously.
+
+As a teacher, I want to find a film that is educational and entertaining to show my students.
+
+As a teenager, I care about what others think about a movie before I decide if I want to watch it or not.
+
 
 **EXCEPTIONS**
 
