@@ -6,11 +6,11 @@ As a mom, I want to stay on track of all the movies my kids want to watch so I d
 
 As a screenwriter, I want to see what the top rated movies are, so I can have better inspiration for my projects.
 
-As a film enthusiast, I want to know other people's thoughts on movies so I can continue to discover good movies.
+As a college student enthusiast, I want to know other people's thoughts on movies so I can continue to discover good movies.
 
-As a teacher, I want to see films' ratings so I can ensure they are appropriate for my students.
+As a social person, I want to see what movies my friends are watching so I can stay in the know. 
 
-As a college student, I want to see what movies my friends are watching so I can stay in the know. 
+As a user, I want to edit or delete my reviews so I can update my opinions
 ---
 
 **EXCEPTIONS**
