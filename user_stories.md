@@ -39,6 +39,15 @@ If a request is made with a username that does not exist, the site should notify
 *Exception: Missing title when posting a movie*
 If a user tries to add a movie to the site and fails to add the include the film's title, the site will give back an error and notify the user to fill out the missing field. 
 
+*Exception: Same username as another user*
+IF a user tries to make a username with an already existing username, the site will give back an error and notify the user that they must choose a different username.
+
+*Exception: Submitting a blank review*
+If a user tries to submit a blank review, the site will give a warning that the review will be posted only with a rating if they continue.
+
+*Exception: Adding a movie that does not exist/has not come out yet*
+If a user tries to add a movie that does not exist or has not come out yet, the site will give back an error and prompt the user to try again with a movie that has come out already.
+
 
 
 
