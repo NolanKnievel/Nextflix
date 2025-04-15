@@ -18,6 +18,12 @@ As a teacher, I want to find a film that is educational and entertaining to show
 
 As a teenager, I care about what others think about a movie before I decide if I want to watch it or not.
 
+As a casual watcher, I want to keep a personal watchlist of shows/movies so I can easily find them later.
+
+As a critic, I want to write in-depth review for shows/movies so I can share my insights and build a community
+
+As a picky watcher, I want to sort shows/movies by genre, rating, etc. so I can find content that matches my taste.
+
 
 **EXCEPTIONS**
 
@@ -48,7 +54,14 @@ If a user tries to submit a blank review, the site will give a warning that the 
 *Exception: Adding a movie that does not exist/has not come out yet*
 If a user tries to add a movie that does not exist or has not come out yet, the site will give back an error and prompt the user to try again with a movie that has come out already.
 
+*Exception: Exceeding the character limit for a review* 
+If a user writes a review over the set character limit, the site will prevent the user from submitting and notify the user to shorten their review to meet the limit.
 
+*Exception: Writing a review with inappropriate/offensive language*
+If a user writes a review that contains offensive language, thee site will block the submission and prompt the user to change their review.
+
+*Exception: Too many failed log-in attempts*
+If a user fails to log-in after a set amount of attempts, the site should notify the user email accordingly and display a CAPTCHA to prevent unauthorized users from accessing other accounts.
 
 
 
