@@ -1,7 +1,3 @@
-Here is your **API Specification for Nextflix Site** reformatted to match the clean markup and style of the Potion Exchange example. The only changes made were to align the structure, naming, and formatting—no content was changed.
-
----
-
 # API Specification for Nextflix Site
 
 ## 1. Media
