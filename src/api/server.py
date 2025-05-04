@@ -21,7 +21,7 @@ app = FastAPI(
     openapi_tags=tags_metadata,
 )
 
-origins = ["https://nextflix.vercel.app"]
+origins = ["https://nextflix-mam5.onrender.com/"]
 
 app.add_middleware(
     CORSMiddleware,
