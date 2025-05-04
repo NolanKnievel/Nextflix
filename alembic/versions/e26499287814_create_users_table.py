@@ -37,6 +37,13 @@ def upgrade() -> None:
         comment='Username must be alphanumeric and start with a letter, 3-20 characters long.'
     )
 
+    # username - must be unique
+    op.create_unique_constraint(
+        'uq_username',
+        'users',
+        ['username'],
+        comment='Username must be unique.'
+    )
     
 
 
