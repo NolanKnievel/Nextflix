@@ -15,7 +15,7 @@ router = APIRouter(
 
 # username - must be alphanumeric, 3-20 characters long, and start with a letter
 class Username(BaseModel): 
-    username : str = Field(..., min_length=3, max_length=20
+    username: str = Field(..., min_length=3, max_length=20
     )
 
     @field_validator("username")
@@ -29,4 +29,13 @@ class Username(BaseModel):
 # create user
 @router.post("/{username}", status_code=status.HTTP_204_NO_CONTENT)
 def create_new_user(username: str):
-    pass
+    with db.engine.begin() as connection:
+        connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO users (username)
+                VALUES (:username)
+
+                """
+            ), [{"username": username}]
+        )
