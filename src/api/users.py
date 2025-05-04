@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from pydantic import BaseModel, Field, field_validator
 from typing import List
 
@@ -30,12 +30,25 @@ class Username(BaseModel):
 @router.post("/{username}", status_code=status.HTTP_204_NO_CONTENT)
 def create_new_user(username: str):
     with db.engine.begin() as connection:
-        connection.execute(
+
+        user_existing = connection.execute(
             sqlalchemy.text(
+                """
+                SELECT username
+                FROM users
+                WHERE username = :username
+                """
+            ), [{"username": username}]
+        ).fetchone()
+        if user_existing is None:
+            connection.execute(
+                sqlalchemy.text(
                 """
                 INSERT INTO users (username)
                 VALUES (:username)
 
                 """
-            ), [{"username": username}]
-        )
+                ), [{"username": username}]
+            )
+        else:
+            raise HTTPException(status_code=409, detail="Username already exists. Please try again.")
