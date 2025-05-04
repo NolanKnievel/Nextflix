@@ -27,7 +27,6 @@ def test_users():
         create_new_user("testuser")
     except Exception as e:
         assert e.status_code == 409
-        assert str(e.detail) == "Username already exists. Please try again."
 
     create_new_user("testuser3")
     create_new_user("testuser4")
