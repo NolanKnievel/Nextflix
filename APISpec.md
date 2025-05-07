@@ -10,7 +10,6 @@ Retrieve a list of media that match search parameters. Can search by media name 
 ```json
 [
   {
-    "id": "integer", /* Greater than 0 */
     "media_name": "string"
   },
   {
@@ -27,22 +26,22 @@ Retrieve info about a piece of media, including title, director, and rating.
 ```json
 {
   "id": "integer", /* Greater than 0 */
-  "name": "string",
-  "average_rating": "integer", /* Between 1 and 5 */
+  "title": "string",
+  "average_rating": "float", /* Between 1 and 5 */
   "director": "string" /* Optional, may be null */
 }
 ```
 
-### 1.3. Post Media - `/media` (POST)
+### 1.3. Post Film - `/media` (POST)
 
-Add a media to the site that does not exist. Users provide title, director, and media type.
+Add a film to the site that does not exist. Users provide title, director, and film length.
 
 **Request**:
 ```json
 {
   "title": "string",
   "director": "string",
-  "media_type": "string" /* can be either show or movie */
+  "length": "int" 
 }
 ```
 
@@ -53,7 +52,29 @@ Add a media to the site that does not exist. Users provide title, director, and 
 }
 ```
 
-### 1.4. Reviewing Media - `/media/{media_title}/reviews/` (POST)
+### 1.4. Post Show - `/media` (POST)
+
+Add a show to the site that does not exist. Users provide title, director, total seasons, and total episodes.
+
+**Request**:
+```json
+{
+  "title": "string",
+  "director": "string",
+  "seasons": "int",
+  "episodes": "int"
+}
+```
+
+**Response**:
+```json
+{
+  "success": "boolean"
+}
+```
+
+
+### 1.5. Reviewing Media - `/media/{media_title}/reviews/` (POST)
 
 Users can post a review for an existing media.
 
@@ -73,7 +94,7 @@ Users can post a review for an existing media.
 }
 ```
 
-### 1.5. View Reviews - `/media/{media_title}/reviews` (GET)
+### 1.6. View Reviews - `/media/{media_title}/reviews` (GET)
 
 Retrieve reviews about a specified piece of media.
 
@@ -103,41 +124,27 @@ Users can add existing media to their watchlist. If media does not exist on the 
 ```json
 {
   "title": "string",
-  "director": "string",
-  "media_type": "string",
-  "is_watched": false
+  "have_watched": false
 }
 ```
 
 **Response**:
 ```json
-{
-  "success": "boolean"
-}
+HTTP_204_NO_CONTENT
 ```
 
-### 2.2. Mark as Watched - `/users/{username}/watchlist/{media_name}` (PATCH)
+### 2.2. Mark as Watched - `/users/{username}/watchlist/{media_title}` (PATCH)
 
 Update the watchlist to mark a movie as viewed.
 
 **Request**:
 ```json
-{
-  "is_viewed": true
-}
+{}
 ```
 
 **Response**:
 ```json
-{
-  "success": "boolean",
-  "watched": {
-    "title": "string",
-    "director": "string",
-    "media_type": "string",
-    "is_watched": true
-  }
-}
+HTTP_204_NO_CONTENT
 ```
 
 ### 2.3. Get Watchlist - `/users/{username}/watchlist` (GET)
@@ -147,11 +154,10 @@ Returns the watchlist of a specified user.
 **Response**:
 ```json
 {
-  "username": "string",
-  "results": [
+[
     {
       "id": "integer", /* Greater than 0 */
-      "name": "string",
+      "title": "string",
       "average_rating": "integer", /* Between 1 and 5 */
       "director": "string" /* Optional, may be null */
     }
@@ -186,7 +192,15 @@ Retrieve a list of users that match search parameters.
 }
 ```
 
-### 2.6. Friend User - `/users/{your_username}/friends` (POST)
+### 2.6. Create User - `/users/{username}` (POST)
+
+**Response**:
+```json
+204_NO_CONTENT
+```
+
+
+### 2.7. Friend User - `/users/{your_username}/friends` (POST)
 
 Add another user to a given user’s friends list.
 
