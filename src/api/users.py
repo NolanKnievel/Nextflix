@@ -32,6 +32,13 @@ class UserInfo(BaseModel):
     date_joined: str
     size_of_watchlist: int
 
+class WatchlistItem(BaseModel):
+    media_id : int
+    title : str
+    director : str
+    have_watched : bool
+
+
 
 # create user
 @router.post("/{username}", status_code=status.HTTP_204_NO_CONTENT)
@@ -125,9 +132,25 @@ def mark_as_watched(username: str, title: str):
 
 
 # Get Watchlist
-@router.get("/{username}/watchlist", response_model=List[MediaInfo])  
+@router.get("/{username}/watchlist", response_model=List[WatchlistItem])  
 def get_watchlist(username: str, only_watched_media: bool=False):
-    pass
+    with db.engine.begin() as connection:
+        result = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT * FROM watchlists
+                JOIN users ON watchlists.user_id = users.id
+                JOIN media ON watchlists.media_id = media.media_id
+                WHERE users.username = :username
+                """
+            ), [{"username": username}]
+        ).fetchall()
+        print(f'result: {result}')
+    
+    watchlist = [WatchlistItem(media_id=entry.media_id, title=entry.title, director=entry.director, have_watched=entry.have_watched) for entry in result]
+
+    return watchlist
+    
 
 
 

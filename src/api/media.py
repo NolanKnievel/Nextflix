@@ -17,7 +17,6 @@ router = APIRouter(
 class MediaInfo(BaseModel):
     id : int
     title : str
-    average_rating : float
     director : str
 
 class MediaType(BaseModel):
