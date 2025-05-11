@@ -1,5 +1,4 @@
-from src.api.users import create_new_user, add_to_watchlist, get_watchlist
-
+from src.api.users import create_new_user, add_to_watchlist, get_watchlist, mark_as_watched
 import sqlalchemy
 from src.api import auth
 from src import database as db
@@ -258,6 +257,63 @@ def test_get_watchlist():
     for movie in watchlist:
         assert movie.title not in movies[3:]
     
+
+
+    with db.engine.begin() as connection:
+        # tear down
+        connection.execute(
+            sqlalchemy.text(
+                """
+                TRUNCATE movies, tv_shows, media, watchlists, users, reviews CASCADE
+                """
+            )
+        )
+
+
+def test_mark_as_watched():
+    # create a new user
+    create_new_user("testuser55")
+
+    # add Test Movie to db
+    with db.engine.begin() as connection:
+        media_id = connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO media (media_type, title, director) VALUES (:media_type, :title, :director)
+                RETURNING media_id
+                """
+            ),
+            {
+                "media_type": "movie",
+                "title": "Test Movie",
+                "director": "Test Director"
+            }
+        ).scalar_one()
+
+        connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO movies (media_id, length) VALUES (:media_id, :length)
+                """
+            ),
+            {
+                "media_id": media_id,
+                "length": 120
+            }
+        )
+    add_to_watchlist("testuser55", "Test Movie", have_watched=False)
+    
+    watchlist = get_watchlist("testuser55")
+    assert len(watchlist) == 1
+
+    watchlist = get_watchlist("testuser55", only_watched_media=True)
+    assert len(watchlist) == 0
+
+    # mark as watched
+    mark_as_watched("testuser55", "Test Movie")
+    watchlist = get_watchlist("testuser55", only_watched_media=True)
+    assert len(watchlist) == 1
+
 
 
     with db.engine.begin() as connection:

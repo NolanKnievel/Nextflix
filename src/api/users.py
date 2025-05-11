@@ -127,8 +127,33 @@ def add_to_watchlist(username: str, title: str, have_watched: bool=False):
 
 # Mark as watched
 @router.patch("/{username}/watchlist/{media_title}", status_code=status.HTTP_204_NO_CONTENT)
-def mark_as_watched(username: str, title: str):
-    pass
+def mark_as_watched(username: str, media_title: str):
+    with db.engine.begin() as connection:
+        # check that entry exists
+        row = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT * FROM watchlists
+                WHERE user_id = (SELECT id FROM users WHERE username = :username)
+                AND media_id = (SELECT media_id FROM media WHERE title = :title)
+                """
+            ), [{"username": username, "title": media_title}]
+        ).fetchone()
+
+        if not row:
+            raise HTTPException(status_code=404, detail="Entry not found. Please try again.")
+
+        # update entry
+        connection.execute(
+            sqlalchemy.text(
+                """
+                UPDATE watchlists
+                SET have_watched = TRUE
+                WHERE user_id = (SELECT id FROM users WHERE username = :username)
+                AND media_id = (SELECT media_id FROM media WHERE title = :title)
+                """
+            ), [{"username": username, "title": media_title}]
+        )
 
 
 # Get Watchlist
