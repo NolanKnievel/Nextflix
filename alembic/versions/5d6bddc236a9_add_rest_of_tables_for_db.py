@@ -19,11 +19,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # ---------------- media - media_id, media_type ----------------
+    # ---------------- media - media_id, media_type, title, director ----------------
     op.create_table(
         'media',
         sa.Column('media_id', sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column('media_type', sa.String(10), nullable=False)
+        sa.Column('media_type', sa.String(10), nullable=False),
+        sa.Column('title', sa.String(255), nullable=False),
+        sa.Column('director', sa.String(255), nullable=False)
     )
 
     # media_type - must be either movie or show
@@ -33,6 +35,15 @@ def upgrade() -> None:
         sa.text("media_type IN ('movie', 'show')")
     )
 
+    # title - must be unique
+    op.create_unique_constraint(
+        'uq_media_title',
+        'media',
+        ['title']
+    )
+
+
+
 
 
 
@@ -41,10 +52,8 @@ def upgrade() -> None:
     op.create_table(
         'tv_shows',
         sa.Column('media_id', sa.Integer, sa.ForeignKey('media.media_id'), primary_key=True),
-        sa.Column('title', sa.String(255), nullable=False),
         sa.Column('total_episodes', sa.Integer, nullable=False),
         sa.Column('total_seasons', sa.Integer, nullable=False),
-        sa.Column('director', sa.String(255), nullable=False)
     )
 
     # total_episodes - must be greater than 0
@@ -60,13 +69,6 @@ def upgrade() -> None:
         sa.text("total_seasons > 0")
     )
 
-    # title - must be unique
-    op.create_unique_constraint(
-        'uq_tv_shows_title',
-        'tv_shows',
-        ['title']
-    )
-
 
 
 
@@ -75,9 +77,7 @@ def upgrade() -> None:
     op.create_table(
         'movies',
         sa.Column('media_id', sa.Integer, sa.ForeignKey('media.media_id'), primary_key=True),
-        sa.Column('title', sa.String(255), nullable=False),
         sa.Column('length', sa.Integer, nullable=False),
-        sa.Column('director', sa.String(255), nullable=False)
     )
     # length - must be greater than 0
     op.create_check_constraint(
@@ -86,12 +86,6 @@ def upgrade() -> None:
         sa.text("length > 0")
     )
 
-    # title - must be unique
-    op.create_unique_constraint(
-        'uq_movies_title',
-        'movies',
-        ['title']
-    )
 
 
     # ---------------- watchlists - user_id, media_id, have_watched ----------------
