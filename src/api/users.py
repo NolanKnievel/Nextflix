@@ -148,6 +148,8 @@ def get_watchlist(username: str, only_watched_media: bool=False):
         print(f'result: {result}')
     
     watchlist = [WatchlistItem(media_id=entry.media_id, title=entry.title, director=entry.director, have_watched=entry.have_watched) for entry in result]
+    if only_watched_media:
+        watchlist = [entry for entry in watchlist if entry.have_watched]
 
     return watchlist
     
