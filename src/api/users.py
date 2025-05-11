@@ -196,5 +196,62 @@ def view_user(username: str):
 # friend user
 @router.post("/{username}/friends", status_code=status.HTTP_204_NO_CONTENT)
 def add_friend(username: str, friend_username: Username):
-    pass
+    with db.engine.begin() as connection:
+        result = connection.execute(
+            sqlalchemy.text(
+            
+                """
+                SELECT id 
+                FROM users
+                WHERE username = :username
+                """
+            ), [{"username": username}]
+        ).fetchone()
 
+        if not result:
+            raise HTTPException(status_code=404, detail="User not found. Please try again.")
+        
+        user_id = result.id
+
+        result2 = connection.execute(
+            sqlalchemy.text(
+            
+                """
+                SELECT id 
+                FROM users
+                WHERE username = :username
+                """
+            ), [{"username": friend_username.username}]
+        ).fetchone()
+
+        if not result2:
+            raise HTTPException(status_code=404, detail="User not found. Please try again.")
+        
+        friend_id = result2.id
+
+        # check if entry already exists
+        existing_entry = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT friends
+                FROM users
+                WHERE id = :user_id
+                """
+            ), [{"user_id": user_id}]
+        ).one()
+
+        friend_list = existing_entry.friends or []
+        if friend_id in friend_list:
+            raise HTTPException(status_code=409, detail="Already friends with this user.")
+        else:
+            friend_list.append(friend_id)
+            # add to friend list
+            connection.execute(
+                sqlalchemy.text(
+                    """
+                    UPDATE users
+                    SET friends = :friend_list
+                    WHERE id = :user_id
+                    """
+                ), [{"friend_list": friend_list, "user_id": user_id}]
+            )
