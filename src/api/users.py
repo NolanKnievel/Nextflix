@@ -55,7 +55,6 @@ def create_new_user(username: str):
                 """
                 INSERT INTO users (username)
                 VALUES (:username)
-
                 """
                 ), [{"username": username}]
             )
@@ -66,7 +65,57 @@ def create_new_user(username: str):
 # Post to watchlist
 @router.post("/{username}/watchlist", status_code=status.HTTP_204_NO_CONTENT)
 def add_to_watchlist(username: str, title: str, have_watched: bool=False):
-    pass
+    
+    with db.engine.begin() as connection:
+        # fetch user_id
+        user_id = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT id FROM users
+                WHERE username = :username"""
+            ), [{"username": username}]
+        ).scalar()
+
+        if not user_id:
+            raise HTTPException(status_code=404, detail="User not found. Please try again.")
+
+        # fetch media_id
+        media_id = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT media_id FROM media
+                WHERE title = :title
+                """
+            ), [{"title": title}]
+        ).scalar()
+        
+        if not media_id:
+            raise HTTPException(status_code=404, detail="Media not found. Please try again.")
+
+        # check if entry already exists
+        existing_entry = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT * FROM watchlists
+                WHERE user_id = :user_id AND media_id = :media_id
+                """
+            ), [{"user_id": user_id, "media_id": media_id}]
+        ).fetchone()
+
+        if existing_entry:
+            return
+        
+        # add to watchlist
+        connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO watchlists (user_id, media_id, have_watched)
+                VALUES (:user_id, :media_id, :have_watched)
+                """
+            ), [{"user_id": user_id, "media_id": media_id, "have_watched": have_watched}]
+        )
+      
+
 
 
 # Mark as watched
