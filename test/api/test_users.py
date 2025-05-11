@@ -1,4 +1,4 @@
-from src.api.users import create_new_user, add_to_watchlist
+from src.api.users import create_new_user, add_to_watchlist, get_watchlist
 
 import sqlalchemy
 from src.api import auth
@@ -146,3 +146,126 @@ def test_add_to_watchlist():
             }
         )
 
+
+def test_add_to_watchlist_invalid_user():
+    # add testuser to the database
+    create_new_user("TestAddUser")
+
+    # add Test Movie to the media table
+    with db.engine.begin() as connection:
+        media_id = connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO media (media_type, title, director) VALUES (:media_type, :title, :director)
+                RETURNING media_id
+                """
+            ),
+            {
+                "media_type": "movie",
+                "title": "Test Movie",
+                "director": "Test Director"
+            }
+        ).scalar_one()
+
+        connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO movies (media_id, length) VALUES (:media_id, :length)
+                """
+            ),
+            {
+                "media_id": media_id,
+                "length": 120
+            }
+        )
+
+        # try to add to watchlist with invalid user
+        try:
+            add_to_watchlist("invaliduser", "Test Movie", have_watched=False)
+        except Exception as e:
+            assert e.status_code == 404
+
+        # try to add to watchlist with invalid media
+        try:
+            add_to_watchlist("testuser", "Invalid Movie", have_watched=False)
+        except Exception as e:
+            assert e.status_code == 404
+
+        # tear down
+        connection.execute(
+            sqlalchemy.text(
+                """
+                TRUNCATE movies, tv_shows, media, watchlists, users, reviews CASCADE
+                """
+            )
+        )
+
+
+
+
+
+
+
+
+def test_get_watchlist():
+    # create a new user
+    create_new_user("testuser44")
+
+    movies = ['testmovie1', 'testmovie2', 'testmovie3', 'testmovie4', 'testmovie5']
+    # add Test Movie to db
+    with db.engine.begin() as connection:
+        for movie in movies:
+            media_id = connection.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO media (media_type, title, director) VALUES (:media_type, :title, :director)
+                    RETURNING media_id
+                    """
+                ),
+                {
+                    "media_type": "movie",
+                    "title": movie,
+                    "director": "Test Director"
+                }
+            ).scalar_one()
+
+            connection.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO movies (media_id, length) VALUES (:media_id, :length)
+                    """
+                ),
+                {
+                    "media_id": media_id,
+                    "length": 120
+                }
+            )
+
+
+    # add movies to watchlist
+    for movie in movies[0:3]:
+        add_to_watchlist("testuser44", movie, have_watched=False)
+
+    watchlist = get_watchlist("testuser44")
+    print(f'watchlist: {watchlist}')
+    assert len(watchlist) == 3
+
+    for movie in watchlist:
+        assert movie.title in movies[0:3]
+        assert movie.director == "Test Director"
+        assert movie.have_watched == False
+    
+    for movie in watchlist:
+        assert movie.title not in movies[3:]
+    
+
+
+    with db.engine.begin() as connection:
+        # tear down
+        connection.execute(
+            sqlalchemy.text(
+                """
+                TRUNCATE movies, tv_shows, media, watchlists, users, reviews CASCADE
+                """
+            )
+        )
