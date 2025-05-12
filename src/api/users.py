@@ -205,8 +205,36 @@ def search_users(username: str):
 # view user
 @router.get("/{username}", response_model=UserInfo)
 def view_user(username: str):
-    pass
+    with db.engine.begin() as connection:
+        result = connection.execute(
+            sqlalchemy.text(
+            
+                """
+                SELECT *
+                FROM users AS u
+                WHERE u.username = :username
+                """
+            ), [{"username": username}]
+        ).fetchone()
 
+
+        if not result:
+            raise HTTPException(status_code=404, detail="User not found. Please try again.")
+        
+        
+        watchlist_count = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT COUNT(*)
+                FROM watchlists AS w
+                WHERE w.user_id = (SELECT id FROM users WHERE username = :username)
+                """
+            ), [{"username": username}]        
+            ).scalar_one()
+        
+        return UserInfo(username=Username(username=username), date_joined=str(result.date_joined), size_of_watchlist=watchlist_count)
+
+        
 
 # friend user
 @router.post("/{username}/friends", status_code=status.HTTP_204_NO_CONTENT)
