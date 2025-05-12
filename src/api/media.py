@@ -63,8 +63,30 @@ def post_show(media_title: str, director: str, seasons: int, episodes: int):
 
 # review media
 @router.post("/{media_title}/reviews", status_code=status.HTTP_204_NO_CONTENT)
-def review_media(media_title: str, review: MediaReview):
+def review_media(media_id: int, review: MediaReview):
     pass
+    with db.engine.begin() as connection:
+        user_id = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT id
+                FROM users
+                WHERE username = :username
+                """
+            ), [{"username":review.username}]
+        ).scalar()
+        connection.execute(
+            sqlalchemy.text(
+                """
+                INSERT INTO reviews (user_id, media_id, rating, review)
+                VALUES (:user_id, :media_id, :rating, :review)
+                ON CONFLICT (user_id, media_id)
+                DO UPDATE SET
+                rating = EXCLUDED.rating,
+                review = EXCLUDED.review
+                """
+            ), [{"user_id": user_id,"media_id": media_id,"rating":review.rating,"review":review.review}]
+        )
 
 
 # view reviews
