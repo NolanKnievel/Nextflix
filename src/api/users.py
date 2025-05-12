@@ -184,7 +184,22 @@ def get_watchlist(username: str, only_watched_media: bool=False):
 # Search for user, maybe return all users on empty search?
 @router.get("/search", response_model=List[Username])
 def search_users(username: str):
-    pass
+    with db.engine.begin() as connection:
+
+        result = connection.execute(
+            sqlalchemy.text(
+            """
+            SELECT username
+            FROM users
+            WHERE username ILIKE :username
+            """
+            ), [{"username": f"%{username}%"}]
+            ).fetchall()
+
+        if not result:
+            raise HTTPException(status_code=404, detail="No users found. Please try again.")
+
+        return [Username(username=row.username) for row in result]
 
 
 # view user
