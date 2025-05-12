@@ -1,24 +1,7 @@
 # Add Media To Watchlist
 
 ## Workflow
-    ### 2.1. Posting to Watchlist - `/users/{username}/watchlist` (POST)
-
-    Users can add existing media to their watchlist. If media does not exist on the site, users are prompted to post the media to the site.
-
-    **Request**:
-    ```json
-    {
-    "title": "string",
-    "have_watched": false
-    }
-    ```
-
-    **Response**:
-    ```json
-    HTTP_204_NO_CONTENT
-    ```
-
-
+    As a casual watcher, I want to keep a personal watchlist of shows/movies so I can easily find them later.
 
 ### Request
     *curl -X 'POST' \
@@ -33,23 +16,7 @@
 
 # Get Watchlist
 ## Workflow
-    ### 2.3. Get Watchlist - `/users/{username}/watchlist` (GET)
-
-    Returns the watchlist of a specified user.
-
-    **Response**:
-    ```json
-    {
-    [
-        {
-        "id": "integer", /* Greater than 0 */
-        "title": "string",
-        "average_rating": "integer", /* Between 1 and 5 */
-        "director": "string" /* Optional, may be null */
-        }
-    ]
-    }
-    ```
+    As a mom, I want to stay on track of all the movies my kids want to watch so I don't forget throughout my busy day.
 
 
 ### Request
@@ -74,19 +41,7 @@
 # Mark As Watched
 
 ## Workflow
-    ### 2.2. Mark as Watched - `/users/{username}/watchlist/{media_title}` (PATCH)
-
-    Update the watchlist to mark a movie as viewed.
-
-    **Request**:
-    ```json
-    {}
-    ```
-
-    **Response**:
-    ```json
-    HTTP_204_NO_CONTENT
-    ```
+    As a mom, I want to stay on track of all the movies my kids want to watch so I don't forget throughout my busy day.
 
 
 ### Request
