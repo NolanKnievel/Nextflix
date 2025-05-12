@@ -17,6 +17,11 @@ router = APIRouter(
 class MediaInfo(BaseModel):
     id : int
     title : str
+    average_rating : float # average rating must be between 0 and 5 inclusive
+    def validate_average_rating(cls, r: float) -> float:
+        if r < 0 or r > 5:
+            raise ValueError("Average rating must be between 0 and 5.")
+        return r
     director : str
 
 class MediaType(BaseModel):
@@ -46,7 +51,21 @@ def search_media(media_name: str, media_type: str):
 # view media
 @router.get("/{media_title}", response_model=MediaInfo)
 def view_media(media_title: str):
-    pass
+    with db.engine.begin() as connection:
+        media = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT media.media_id, title, AVG(reviews.rating) as average_rating, director
+                FROM media
+                JOIN reviews on media.media_id = reviews.media_id
+                WHERE title = :media_title
+                GROUP BY media.media_id
+                """
+            ), [{"media_title": media_title}]
+        ).fetchone()
+        if media is None:
+            raise HTTPException(status_code=404, detail="Media not found")
+        return MediaInfo(id=media.media_id, title=media.title, average_rating=media.average_rating, director=media.director)
 
 
 # post film
