@@ -135,7 +135,7 @@
 
 ## Workflow
 
-    As a teen, I want to add my friends to see what they have been watching.
+    As a social person, I want to see what movies my friends are watching so I can stay in the know.
 
 ### Request
 
@@ -156,7 +156,7 @@
 
 ## Workflow
 
-    As a teenager trying to find a friend, I want to see if my friend has an account
+    As a social person, I want to see what movies my friends are watching so I can stay in the know.
 
 ### Request
 
@@ -179,7 +179,7 @@
 
 ## Worflow
 
-    As a curious individual, I want to see if people have a similar username to me
+    As a college student enthusiast, I want to know other people's thoughts on movies so I can continue to discover good movies.
 
 ## Request
 
