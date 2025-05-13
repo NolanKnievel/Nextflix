@@ -51,4 +51,75 @@
     -H 'access_token: brat'*
 
 ### Response
-    *204 NO CONTENT*
+    *204 NO CONTENT*  
+
+
+
+# View Reviews
+
+## Workflow
+    As a teenager, I care about what others think about a movie before I decide if I want to watch it or not.
+
+### Request
+    *curl -X 'GET' \
+    'http://127.0.0.1:3000/media/Thunderbolts%2A/reviews' \
+    -H 'accept: application/json' \
+    -H 'access_token: brat'*
+
+### Response
+    *[
+    {
+        "username": "bob",
+        "review": "it was cool",
+        "rating": 4
+    },
+    {
+        "username": "yelena",
+        "review": "it was sick",
+        "rating": 5
+    },
+    {
+        "username": "ghost",
+        "review": "i hated it",
+        "rating": 1
+    }
+    ]*
+
+
+
+# Media Search
+
+## Workflow
+    As a teacher, I want to find a film that is educational and entertaining to show my students.
+
+### Request
+    *curl -X 'GET' \
+    'http://127.0.0.1:3000/media/search?media_name=Thunderbolts&media_type=movie' \
+    -H 'accept: application/json' \
+    -H 'access_token: brat'*
+
+### Response
+    *[
+    "Thunderbolts*"
+    ]*
+
+
+
+# View Media
+
+## Workflow
+    As a teacher, I want to find a film that is educational and entertaining to show my students.
+
+### Request
+    *curl -X 'GET' \
+    'http://127.0.0.1:3000/media/Thunderbolts%2A' \
+    -H 'accept: application/json' \
+    -H 'access_token: brat'*
+
+### Response
+    *{
+      "id": 2,
+      "title": "Thunderbolts*",
+      "average_rating": 3.3333333333333335,
+      "director": "Jake Schreier"
+    }*
