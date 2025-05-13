@@ -127,5 +127,20 @@ def review_media(media_id: int, review: MediaReview):
 # view reviews
 @router.get("/{media_title}/reviews", response_model=List[MediaReview])
 def view_reviews(media_title: str):
+    with db.engine.begin() as connection:
+        reviews = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT username, rating, review
+                FROM reviews
+                JOIN users on reviews.user_id = users.id
+                JOIN media on reviews.media_id = media.media_id
+                WHERE title = :media_title
+                """
+            ), [{"media_title": media_title}]
+        ).fetchall()
+        if not reviews:
+            raise HTTPException(status_code=404, detail="No reviews found")
+        return [MediaReview(username=row.username, rating=row.rating, review=row.review) for row in reviews]
     pass
 
