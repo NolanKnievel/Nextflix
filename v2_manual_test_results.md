@@ -177,7 +177,7 @@
 
 # Search Users
 
-## Worflow
+## Workflow
 
     As a college student enthusiast, I want to know other people's thoughts on movies so I can continue to discover good movies.
 
@@ -204,3 +204,46 @@
         "username": "nickc"
         }
     ]
+
+# Post Film
+
+## Request
+    curl -X 'POST' \
+      'https://nextflix-mam5.onrender.com/media/filmsFinding%20Nemo?director=Andrew%20Stanton&length=100' \
+      -H 'accept: */*' \
+      -H 'access_token: CSC365NextFlix' \
+      -d ''
+## Response
+    204 NO CONTENT
+    
+# Post SHOW
+
+## Request
+    curl -X 'POST' \
+      'https://nextflix-mam5.onrender.com/media/showsSeverance?director=Ben%20Stiller&seasons=2&episodes=19' \
+      -H 'accept: */*' \
+      -H 'access_token: CSC365NextFlix' \
+      -d ''
+## Response
+    204 NO CONTENT
+
+# Review Media
+
+## Workflow
+    As a critic, I want to write in-depth review for shows/movies so I can share my insights and build a community
+    
+## Request
+    curl -X 'POST' \
+      'https://nextflix-mam5.onrender.com/media/{media_title}/reviews?media_id=1' \
+      -H 'accept: */*' \
+      -H 'access_token: CSC365NextFlix' \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "username": "USER1",
+      "review": "Perfect Film",
+      "rating": 5
+    }'
+## Response
+    204 NO CONTENT
+
+
