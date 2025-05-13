@@ -88,12 +88,78 @@ def view_media(media_title: str):
 @router.post("/films{media_title}", status_code=status.HTTP_204_NO_CONTENT)
 def post_film(media_title: str, director: str, length: int):
     pass
+    with db.engine.begin() as connection:
+        existing_media = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT media_id
+                FROM media
+                WHERE 
+                title = :title AND
+                director = :director AND
+                media_type = 'movie'
+                """
+            ),[{'title':media_title,'director':director}]
+        ).fetchone()
+        if existing_media:
+            raise HTTPException(status_code=409, detail="Movie already exists in database. Please try again")
+        else: 
+            media_id = connection.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO media (media_type,title,director)
+                    VALUES ('movie',:title,:director)
+                    RETURNING media_id
+                    """
+                ),[{'title':media_title,'director':director}]
+            ).scalar()
+            connection.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO movies (media_id,length)
+                    VALUES (:media_id,:length)
+                    """
+                ),[{'media_id':media_id,'length':length}]
+            )
 
 
 # post show
 @router.post("/shows{media_title}", status_code=status.HTTP_204_NO_CONTENT)
 def post_show(media_title: str, director: str, seasons: int, episodes: int):
     pass
+    with db.engine.begin() as connection:
+        existing_media = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT media_id
+                FROM media
+                WHERE 
+                title = :title AND
+                director = :director AND
+                media_type = 'show'
+                """
+            ),[{'title':media_title,'director':director}]
+        ).fetchone()
+        if existing_media:
+            raise HTTPException(status_code=409, detail="Show already exists in database. Please try again")
+        else: 
+            media_id = connection.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO media (media_type,title,director)
+                    VALUES ('show',:title,:director)
+                    RETURNING media_id
+                    """
+                ),[{'title':media_title,'director':director}]
+            ).scalar()
+            connection.execute(
+                sqlalchemy.text(
+                    """
+                    INSERT INTO tv_shows (media_id,total_episodes,total_seasons)
+                    VALUES (:media_id,:total_episodes,:total_seasons)
+                    """
+                ),[{'media_id':media_id,'total_episodes':episodes,'total_seasons':seasons}]
+            )
 
 
 # review media
