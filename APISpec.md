@@ -7,6 +7,7 @@
 Retrieve a list of media that match search parameters. Can search by media name and type.
 
 **Response**:
+
 ```json
 [
   {
@@ -23,11 +24,12 @@ Retrieve a list of media that match search parameters. Can search by media name 
 Retrieve info about a piece of media, including title, director, and rating.
 
 **Response**:
+
 ```json
 {
-  "id": "integer", /* Greater than 0 */
+  "id": "integer" /* Greater than 0 */,
   "title": "string",
-  "average_rating": "float", /* Between 1 and 5 */
+  "average_rating": "float" /* Between 1 and 5 */,
   "director": "string" /* Optional, may be null */
 }
 ```
@@ -37,15 +39,17 @@ Retrieve info about a piece of media, including title, director, and rating.
 Add a film to the site that does not exist. Users provide title, director, and film length.
 
 **Request**:
+
 ```json
 {
   "title": "string",
   "director": "string",
-  "length": "int" 
+  "length": "int"
 }
 ```
 
 **Response**:
+
 ```json
 {
   "success": "boolean"
@@ -57,6 +61,7 @@ Add a film to the site that does not exist. Users provide title, director, and f
 Add a show to the site that does not exist. Users provide title, director, total seasons, and total episodes.
 
 **Request**:
+
 ```json
 {
   "title": "string",
@@ -67,27 +72,29 @@ Add a show to the site that does not exist. Users provide title, director, total
 ```
 
 **Response**:
+
 ```json
 {
   "success": "boolean"
 }
 ```
 
-
 ### 1.5. Reviewing Media - `/media/{media_title}/reviews/` (POST)
 
 Users can post a review for an existing media.
 
 **Request**:
+
 ```json
 {
   "username": "string",
-  "rating": "integer", /* must be between 1 and 5 inclusive */
+  "rating": "integer" /* must be between 1 and 5 inclusive */,
   "review": "string"
 }
 ```
 
 **Response**:
+
 ```json
 {
   "success": "boolean"
@@ -99,6 +106,7 @@ Users can post a review for an existing media.
 Retrieve reviews about a specified piece of media.
 
 **Response**:
+
 ```json
 [
   {
@@ -121,6 +129,7 @@ Retrieve reviews about a specified piece of media.
 Users can add existing media to their watchlist. If media does not exist on the site, users are prompted to post the media to the site.
 
 **Request**:
+
 ```json
 {
   "title": "string",
@@ -129,6 +138,7 @@ Users can add existing media to their watchlist. If media does not exist on the 
 ```
 
 **Response**:
+
 ```json
 HTTP_204_NO_CONTENT
 ```
@@ -138,11 +148,13 @@ HTTP_204_NO_CONTENT
 Update the watchlist to mark a movie as viewed.
 
 **Request**:
+
 ```json
 {}
 ```
 
 **Response**:
+
 ```json
 HTTP_204_NO_CONTENT
 ```
@@ -152,6 +164,7 @@ HTTP_204_NO_CONTENT
 Returns the watchlist of a specified user.
 
 **Response**:
+
 ```json
 {
 [
@@ -170,6 +183,7 @@ Returns the watchlist of a specified user.
 Retrieve a list of users that match search parameters.
 
 **Response**:
+
 ```json
 [
   {
@@ -184,6 +198,7 @@ Retrieve a list of users that match search parameters.
 ### 2.5. View User - `/users/{username}` (GET)
 
 **Response**:
+
 ```json
 {
   "username": "string",
@@ -195,21 +210,39 @@ Retrieve a list of users that match search parameters.
 ### 2.6. Create User - `/users/{username}` (POST)
 
 **Response**:
+
 ```json
 204_NO_CONTENT
 ```
-
 
 ### 2.7. Friend User - `/users/{your_username}/friends` (POST)
 
 Add another user to a given user’s friends list.
 
 **Response**:
+
 ```json
 {
   "friend_username": "string",
   "success": "boolean"
 }
+```
+
+### 2.8. Find Suggested Friends - `/{your_username}/suggested_friends` (GET)
+
+Find suggested friends based off mutual friends with your friends
+
+**Response**
+
+```json
+[
+  {
+    "username": "jack"
+  },
+  {
+    "username": "bro"
+  }
+]
 ```
 
 ---
@@ -261,3 +294,14 @@ Add another user to a given user’s friends list.
 
 3. After the friend request is accepted, view their watchlist: **Get Watchlist**  
    `GET /users/<friend_username>/watchlist`
+
+### 3.4. User wants to find mutuals of their friends to add
+
+1. Search users to follow: **Searching Users**  
+   `GET /users?username=<username>`
+
+2. Send a friend request: **Friend User**  
+   `POST /users/<your_username>/friends`
+
+3. Find mutual friends to add: **Get Suggested Friends**
+   `/{your_username}/suggested_friends`
