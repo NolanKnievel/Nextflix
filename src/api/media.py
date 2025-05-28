@@ -41,6 +41,18 @@ class MediaReview(BaseModel):
     review: str
     rating: float = Field(..., gt=0, lt=6) # review must be between 1 and 5 inclusive
 
+class MediaRecommendation(BaseModel):
+    id: int
+    title: str
+    media_type: str
+
+    # media type must be movie or show
+    @field_validator("media_type")
+    @classmethod
+    def validate_media_type(cls, s: str) -> str:
+        if s not in ["movie", "show"]:
+            raise ValueError("Media type must be either 'movie' or 'show'.")
+        return s
 
 # search media
 @router.get("/search", response_model=List[str])
@@ -210,3 +222,88 @@ def view_reviews(media_title: str):
         return [MediaReview(username=row.username, rating=row.rating, review=row.review) for row in reviews]
     pass
 
+
+
+
+# COMPLEX ENDPOINT
+@router.get("/{username}/recommendations", response_model=List[MediaRecommendation])
+def get_recommendations(username: str):
+    with db.engine.begin() as connection:
+        # get target user id
+        user_data = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT id, friends
+                FROM users
+                WHERE username = :username
+                """
+            ),
+            {"username": username}
+        ).fetchone()
+
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user_id = user_data.id
+        friend_ids = user_data.friends
+
+        print(f'user id: {user_id} friend_ids: {friend_ids}')
+
+        if not friend_ids:
+            return []
+
+        # get target user watchlist
+        user_watchlist_media_ids = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT media_id
+                FROM watchlists
+                WHERE user_id = :user_id
+                """
+            ),
+            {"user_id": user_id}
+        ).fetchall()
+        
+
+        user_watchlist_media_ids = {row.media_id for row in user_watchlist_media_ids}
+
+        print(f'user watchlist media ids: {user_watchlist_media_ids}')
+
+        # fetch recommendations from friends' watchlists
+        recommendations = []
+        for friend_id in friend_ids:
+            friend_recommendations = connection.execute(
+                sqlalchemy.text(
+                    """
+                    SELECT DISTINCT m.media_id, m.title, m.media_type, m.director
+                    FROM watchlists w
+                    JOIN media m ON w.media_id = m.media_id
+                    WHERE w.user_id = :friend_id
+                      AND w.media_id NOT IN ( SELECT media_id
+                                                FROM watchlists
+                                                WHERE user_id = :user_id
+                                                ) 
+                    LIMIT 1
+                    """
+                ),
+                {"friend_id": friend_id, "user_id" : user_id}
+            ).fetchall()
+
+            recommendations.extend(friend_recommendations)
+
+            # stop if at 10 recommendations
+            if len(recommendations) >= 10:
+                break
+
+        print(f'recommendations: {recommendations}')
+
+
+        return [
+            MediaRecommendation(
+                id=row.media_id,
+                title=row.title,
+                media_type=row.media_type,
+                director=row.director
+            )
+            for row in recommendations[:10] 
+        ]
