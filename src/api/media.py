@@ -18,11 +18,14 @@ class MediaInfo(BaseModel):
     id : int
     title : str
     average_rating : float # average rating must be between 0 and 5 inclusive
+    director : str
+
+    @field_validator("average_rating")
+    @classmethod
     def validate_average_rating(cls, r: float) -> float:
         if r < 0 or r > 5:
             raise ValueError("Average rating must be between 0 and 5.")
         return r
-    director : str
 
 class MediaType(BaseModel):
     title: str
@@ -83,12 +86,15 @@ def view_media(media_title: str):
         media = connection.execute(
             sqlalchemy.text(
                 """
-                SELECT media.media_id, title, AVG(reviews.rating) as average_rating, director
+                WITH avgs AS (
+                    SELECT media_id, AVG(rating) as avg_rev
+                    FROM reviews
+                    GROUP BY media_id
+                )
+                SELECT media.media_id, media.title, COALESCE(avgs.avg_rev, 0) as average_rating, media.director
                 FROM media
-                JOIN reviews on media.media_id = reviews.media_id
-                WHERE title = :media_title
-                GROUP BY media.media_id
-                """
+                LEFT JOIN avgs ON media.media_id = avgs.media_id
+                WHERE title = :media_title                """
             ), [{"media_title": media_title}]
         ).fetchone()
         if media is None:
