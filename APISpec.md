@@ -112,6 +112,25 @@ Retrieve reviews about a specified piece of media.
 ]
 ```
 
+### 1.7. Get Recommendations - `/media/{username}/recommendations` (GET)
+
+Retrieve a list of up to 10 media recommendations based on your friends' watchlists.
+
+**Response**:
+```json
+[
+  {
+    "id": "int",
+    "title": "string", 
+    "media_type": "string"
+  },
+  {
+    ...
+  }...
+]
+```
+
+
 ---
 
 ## 2. Users

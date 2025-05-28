@@ -225,6 +225,7 @@ def view_reviews(media_title: str):
 
 
 
+# COMPLEX ENDPOINT
 @router.get("/{username}/recommendations", response_model=List[MediaRecommendation])
 def get_recommendations(username: str):
     with db.engine.begin() as connection:
