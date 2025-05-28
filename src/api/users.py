@@ -298,3 +298,81 @@ def add_friend(username: str, friend_username: Username):
                     """
                 ), [{"friend_list": friend_list, "user_id": user_id}]
             )
+
+# Get suggested friends
+@router.get("/{username}/suggested_friends", response_model=List[Username])
+def get_suggested_friends(username: str):
+    with db.engine.begin() as connection:
+        # fetch user_id
+        user_id = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT id FROM users
+                WHERE username = :username
+                """
+            ), [{"username": username}]
+        ).scalar()
+
+        if not user_id:
+            raise HTTPException(status_code=404, detail="User not found. Please try again.")
+
+        # fetch friends
+        result = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT friends
+                FROM users
+                WHERE id = :user_id
+                """
+            ), [{"user_id": user_id}]
+        ).fetchone()
+
+        if not result or not result.friends:
+            raise HTTPException(status_code=404, detail="No friends found. Please try again.")
+        
+        friends = result.friends
+
+        # create dictionary of friends of friends
+        friend_of_friends = {}
+        for friend in friends:
+            friend_friends = connection.execute(
+                sqlalchemy.text(
+                    """
+                    SELECT friends
+                    FROM users
+                    WHERE id = :friend_id
+                    """
+                ), [{"friend_id": friend}]
+            ).fetchone()
+            
+            if friend_friends:
+                for ff in friend_friends.friends:
+                    if ff not in friends and ff != user_id:
+                        if ff not in friend_of_friends:
+                            friend_of_friends[ff] = 1
+                        else:
+                            friend_of_friends[ff] += 1
+        # sort by number of mutual friends
+        suggested_friends = sorted([(user_id, count) for user_id, count in friend_of_friends.items() if count >= 3], key=lambda x: x[1], reverse=True)
+        # return usernames of suggested friends
+
+
+        suggested_usernames = []
+        for friend in suggested_friends:
+            friend_usernames = connection.execute(
+                sqlalchemy.text(
+                    """
+                    SELECT username
+                    FROM users
+                    WHERE id = :friend_id
+                    """
+                ), [{"friend_id": friend[0]}]
+            ).scalar_one()
+
+            suggested_usernames.append(Username(username=friend_usernames))
+
+
+
+        if not suggested_usernames:
+            raise HTTPException(status_code=404, detail="No suggested friends found. Please try again.")
+        return suggested_usernames
