@@ -62,6 +62,12 @@ class FilmSubmission(BaseModel):
     director: str = Field(..., min_length=1, max_length=100) 
     length: int = Field(..., gt=0, lt=1000)
 
+class ShowSubmission(BaseModel):
+    director: str = Field(..., min_length=1, max_length=100) 
+    seasons: int = Field(..., gt=0, lt=100)
+    episodes: int = Field(..., gt=0, lt=1000)
+
+
 
 # search media
 @router.get("/search", response_model=List[str])
@@ -146,8 +152,10 @@ def post_film(film: FilmSubmission):
 
 # post show
 @router.post("/shows{media_title}", status_code=status.HTTP_204_NO_CONTENT)
-def post_show(media_title: str, director: str, seasons: int, episodes: int):
-    pass
+def post_show(media_title: str, show: ShowSubmission):
+    director = show.director
+    seasons = show.seasons
+    episodes = show.episodes
     with db.engine.begin() as connection:
         existing_media = connection.execute(
             sqlalchemy.text(
