@@ -57,6 +57,18 @@ class MediaRecommendation(BaseModel):
             raise ValueError("Media type must be either 'movie' or 'show'.")
         return s
 
+class FilmSubmission(BaseModel):
+    title: str = Field(..., min_length=1, max_length=100) 
+    director: str = Field(..., min_length=1, max_length=100) 
+    length: int = Field(..., gt=0, lt=1000)
+
+class ShowSubmission(BaseModel):
+    director: str = Field(..., min_length=1, max_length=100) 
+    seasons: int = Field(..., gt=0, lt=100)
+    episodes: int = Field(..., gt=0, lt=1000)
+
+
+
 # search media
 @router.get("/search", response_model=List[str])
 def search_media(media_name: str, media_type: str):
@@ -103,21 +115,18 @@ def view_media(media_title: str):
 
 
 # post film
-@router.post("/films{media_title}", status_code=status.HTTP_204_NO_CONTENT)
-def post_film(media_title: str, director: str, length: int):
-    pass
+@router.post("/films", status_code=status.HTTP_204_NO_CONTENT)
+def post_film(film: FilmSubmission):
     with db.engine.begin() as connection:
         existing_media = connection.execute(
             sqlalchemy.text(
                 """
                 SELECT media_id
                 FROM media
-                WHERE 
-                title = :title AND
-                director = :director AND
+                WHERE title = :title AND
                 media_type = 'movie'
                 """
-            ),[{'title':media_title,'director':director}]
+            ),[{'title':film.title,'director':film.director}]
         ).fetchone()
         if existing_media:
             raise HTTPException(status_code=409, detail="Movie already exists in database. Please try again")
@@ -129,7 +138,7 @@ def post_film(media_title: str, director: str, length: int):
                     VALUES ('movie',:title,:director)
                     RETURNING media_id
                     """
-                ),[{'title':media_title,'director':director}]
+                ),[{'title':film.title,'director':film.director}]
             ).scalar()
             connection.execute(
                 sqlalchemy.text(
@@ -137,14 +146,16 @@ def post_film(media_title: str, director: str, length: int):
                     INSERT INTO movies (media_id,length)
                     VALUES (:media_id,:length)
                     """
-                ),[{'media_id':media_id,'length':length}]
+                ),[{'media_id':media_id,'length':film.length}]
             )
 
 
 # post show
 @router.post("/shows{media_title}", status_code=status.HTTP_204_NO_CONTENT)
-def post_show(media_title: str, director: str, seasons: int, episodes: int):
-    pass
+def post_show(media_title: str, show: ShowSubmission):
+    director = show.director
+    seasons = show.seasons
+    episodes = show.episodes
     with db.engine.begin() as connection:
         existing_media = connection.execute(
             sqlalchemy.text(

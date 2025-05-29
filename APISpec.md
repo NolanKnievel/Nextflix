@@ -34,7 +34,7 @@ Retrieve info about a piece of media, including title, director, and rating.
 }
 ```
 
-### 1.3. Post Film - `/media` (POST)
+### 1.3. Post Film - `/films` (POST)
 
 Add a film to the site that does not exist. Users provide title, director, and film length.
 
