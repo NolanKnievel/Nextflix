@@ -24,7 +24,8 @@ class Username(BaseModel):
     @classmethod
     def validate_username(cls, s: str) -> str:
         if not s.isalnum() or not s[0].isalpha():
-            raise ValueError("Username must be alphanumeric and start with a letter.")
+            raise HTTPException(status_code=400, detail="Username must be alphanumeric and start with a letter.")
+            # raise ValueError("Username must be alphanumeric and start with a letter.")
         return s
     
 class UserInfo(BaseModel):
@@ -43,7 +44,11 @@ class WatchlistItem(BaseModel):
 # create user
 @router.post("/{username}", status_code=status.HTTP_204_NO_CONTENT)
 def create_new_user(username: str):
-    validated_username = Username(username=username).username
+    validated_username = Username.validate_username(username)
+
+    # Check if username is correct length
+    if len(validated_username) < 3 or len(validated_username) > 20:
+        raise HTTPException(status_code=400, detail="Username must be between 3 and 20 characters long.")
 
     with db.engine.begin() as connection:
 
