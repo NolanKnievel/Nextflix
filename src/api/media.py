@@ -151,7 +151,7 @@ def post_film(film: FilmSubmission):
 
 
 # post show
-@router.post("/shows{media_title}", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/shows/{media_title}", status_code=status.HTTP_201_CREATED)
 def post_show(media_title: str, show: ShowSubmission):
     director = show.director
     seasons = show.seasons
