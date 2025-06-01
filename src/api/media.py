@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
-from typing import List
+from typing import List, Optional
 
 import sqlalchemy
 from src.api import auth
@@ -93,26 +93,50 @@ def search_media(media_name: str, media_type: str):
 
 
 # view media
-@router.get("/{media_title}", response_model=MediaInfo)
-def view_media(media_title: str):
+@router.get("/view", response_model=List[MediaInfo])
+def view_media(media_title: Optional[str] = None):
     with db.engine.begin() as connection:
-        media = connection.execute(
-            sqlalchemy.text(
-                """
-                WITH avgs AS (
-                    SELECT media_id, AVG(rating) as avg_rev
-                    FROM reviews
-                    GROUP BY media_id
-                )
-                SELECT media.media_id, media.title, COALESCE(avgs.avg_rev, 0) as average_rating, media.director
-                FROM media
-                LEFT JOIN avgs ON media.media_id = avgs.media_id
-                WHERE title = :media_title                """
-            ), [{"media_title": media_title}]
-        ).fetchone()
-        if media is None:
+
+        # If media_title is provided, fetch media with that similar titles and their average ratings
+        if media_title:
+            media = connection.execute(
+                sqlalchemy.text(
+                    """
+                    WITH avgs AS (
+                        SELECT media_id, AVG(rating) as avg_rev
+                        FROM reviews
+                        GROUP BY media_id
+                    )
+                    SELECT media.media_id, media.title, COALESCE(avgs.avg_rev, 0) as average_rating, media.director
+                    FROM media
+                    LEFT JOIN avgs ON media.media_id = avgs.media_id
+                    WHERE media.title ILIKE :media_title
+                    ORDER BY average_rating DESC, media.title
+                    """
+                ), [{'media_title': f'%{media_title}%'}]  # Use ILIKE for case-insensitive search
+            ).fetchall()
+
+        # If media_title is None, fetch all media with their average ratings
+        elif media_title is None:
+            media = connection.execute(
+                sqlalchemy.text(
+                    """
+                    WITH avgs AS (
+                        SELECT media_id, AVG(rating) as avg_rev
+                        FROM reviews
+                        GROUP BY media_id
+                    )
+                    SELECT media.media_id, media.title, COALESCE(avgs.avg_rev, 0) as average_rating, media.director
+                    FROM media
+                    LEFT JOIN avgs ON media.media_id = avgs.media_id
+                    ORDER BY average_rating DESC, media.title
+                    """
+                )).fetchall()
+        if not media:
             raise HTTPException(status_code=404, detail="Media not found")
-        return MediaInfo(id=media.media_id, title=media.title, average_rating=media.average_rating, director=media.director)
+        
+        # Convert the result set to a list of MediaInfo objects
+        return [MediaInfo(id=row.media_id, title=row.title, average_rating=row.average_rating, director=row.director) for row in media]
 
 
 # post film
