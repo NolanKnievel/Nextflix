@@ -244,7 +244,7 @@ def post_show(show: ShowSubmission):
 
 # review media
 @router.post("/{media_title}/reviews", response_model=MediaReview, status_code=status.HTTP_201_CREATED)
-def review_media(media_id: int, review: MediaReview):
+def review_media(media_title: str, review: MediaReview):
     with db.engine.begin() as connection:
         user_id = connection.execute(
             sqlalchemy.text(
@@ -255,6 +255,23 @@ def review_media(media_id: int, review: MediaReview):
                 """
             ), [{"username":review.username}]
         ).scalar()
+
+        if not user_id:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        media_id = connection.execute(
+            sqlalchemy.text(
+                """
+                SELECT media_id
+                FROM media
+                WHERE title ILIKE :media_title
+                LIMIT 1
+                """
+            ), [{"media_title": media_title}]).scalar_one()
+        
+        if not media_id:
+            raise HTTPException(status_code=404, detail="Media not found")
+        
         connection.execute(
             sqlalchemy.text(
                 """
