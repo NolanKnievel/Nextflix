@@ -4,7 +4,16 @@ from src import database as db
 from depopulate import depopulate
 import random
 
-SIZE = 1000
+SIZE = 100000
+# 100000 users
+# 5ish reviews per user
+# 5ish watchlists per user
+
+# Example row counts after running populate.py:
+# users - 100000
+# reviews - 492571
+# watchlists - 492483
+
 
 def populate():
     """
@@ -14,15 +23,17 @@ def populate():
 
     with db.engine.begin() as connection:
         # create users
+        users = []
         for i in range(1, SIZE+1):
             username = f'user{i}'
-            connection.execute(
-                sqlalchemy.text(
-                    "INSERT INTO users (username) VALUES (:username)"
-                ),
-                {"username": username}
-            )
+            users.append({'username': username})
 
+        connection.execute(
+            sqlalchemy.text(
+                "INSERT INTO users (username) VALUES (:username)"
+            ),
+            users
+        )
         # add friends to users
         min_id = connection.execute(
             sqlalchemy.text("SELECT MIN(id) FROM users")
@@ -31,26 +42,20 @@ def populate():
             sqlalchemy.text("SELECT MAX(id) FROM users")
         ).scalar()
 
+        friend_updates = []
         for i in range(min_id, max_id + 1):
-            # generate 0 to 10 random friends for each user
             friends = []
             for _ in range(random.randint(0, 10)):
                 friends.append(random.randint(min_id, max_id))
-            
-            friends = list(set(friends))  # remove duplicates
-            if i in friends:  # remove self friending
+            friends = list(set(friends))
+            if i in friends:
                 friends.remove(i)
+            friend_updates.append({"id": i, "friends": friends})
 
-            if friends:
-                connection.execute(
-                    sqlalchemy.text(
-                        f"""
-                        UPDATE users SET friends = :friends WHERE id = :id
-                        """
-                    ),
-                    {"friends": friends, "id": i}
-                )
-            
+        connection.execute(
+            sqlalchemy.text("UPDATE users SET friends = :friends WHERE id = :id"),
+            friend_updates
+        )
 
         # create media
         for i in range(1, 101):
@@ -113,37 +118,40 @@ def populate():
         
         
         # create reviews
+        review_update = []
         for i in range(min_id, max_id + 1):
             for j in range(random.randint(0, 10)):
-                media_id = random.randint(show_min_id, movie_max_id)
-                rating = random.randint(1, 5)
-                review_text = f'Review {j+1} for user {i} on media {media_id}'
-                connection.execute(
-                    sqlalchemy.text(
-                        """
-                        INSERT INTO reviews (user_id, media_id, rating, review)
-                        VALUES (:user_id, :media_id, :rating, :review)
-                        ON CONFLICT DO NOTHING -- to avoid duplicate reviews
-                        """
-                    ),
-                    {"user_id": i, "media_id": media_id, "rating": rating, "review": review_text}
-                )
-        # create watchlists
-        for i in range(min_id, max_id + 1):
-            for j in range(random.randint(0, 10)):
-                media_id = random.randint(show_min_id, movie_max_id)
-                have_watched = random.choice([True, False])
+                review_update.append({
+                    "user_id": i,
+                    "media_id": random.randint(show_min_id, movie_max_id),
+                    "rating": random.randint(1, 5),
+                    "review": f'Review {j+1} for user {i}'
+                })
 
-                connection.execute(
-                    sqlalchemy.text(
-                        """
-                        INSERT INTO watchlists (user_id, media_id, have_watched)
-                        VALUES (:user_id, :media_id, :have_watched)
-                        ON CONFLICT DO NOTHING -- to avoid duplicate watchlist entries
-                        """
-                    ),
-                    {"user_id": i, "media_id": media_id, "have_watched": have_watched}
-                )
+        connection.execute(
+            sqlalchemy.text("INSERT INTO reviews (user_id, media_id, rating, review) VALUES (:user_id, :media_id, :rating, :review) ON CONFLICT DO NOTHING"),
+            review_update
+        )
+        
+        # create watchlists
+        watchlist_update = []
+        for i in range(min_id, max_id + 1):
+            for j in range(random.randint(0, 10)):
+                watchlist_update.append({
+                    "user_id": i,
+                    "media_id": random.randint(show_min_id, movie_max_id),
+                    "have_watched": random.choice([True, False])
+                })
+
+        connection.execute(
+            sqlalchemy.text("""
+                INSERT INTO watchlists (user_id, media_id, have_watched)
+                VALUES (:user_id, :media_id, :have_watched)
+                ON CONFLICT DO NOTHING
+            """),
+            watchlist_update
+        )
+
 
 if __name__ == "__main__":
     populate()
