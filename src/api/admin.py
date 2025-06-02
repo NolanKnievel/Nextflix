@@ -63,4 +63,4 @@ def reset():
                 ) 
             )
     except Exception as e:
-        raise HTTPException(500,detail = "Could not reset")
+        raise HTTPException(status_code = 500,detail = "Could not reset")
