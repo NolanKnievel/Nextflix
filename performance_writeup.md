@@ -95,7 +95,7 @@ GET /media/{username}/recommendations
 **The next two slowest were add to watchlist POST /users/{username}/watchlist at 123.76ms and view media GET /media/view at 125.96ms**
 
 
-## Adding index
+## Performance Tuning
 
 ### Explained query before: 
     Seq Scan on users  (cost=0.00..3083.00 rows=10 width=9)
