@@ -12,7 +12,6 @@ from src import database as db
 router = APIRouter(
     prefix="/users",
     tags=["users"],
-    dependencies=[Depends(auth.get_api_key)],
 )
 
 # username - must be alphanumeric, 3-20 characters long, and start with a letter

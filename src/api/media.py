@@ -11,7 +11,6 @@ from src import database as db
 router = APIRouter(
     prefix="/media",
     tags=["media"],
-    dependencies=[Depends(auth.get_api_key)],
 )
 
 class MediaInfo(BaseModel):
