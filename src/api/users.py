@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from fastapi import APIRouter, Depends, status, HTTPException
 from pydantic import BaseModel, Field, field_validator
 from typing import List
+from typing import Optional
 
 from src.api.media import MediaInfo
 
@@ -187,20 +188,33 @@ def get_watchlist(username: str, only_watched_media: bool=False):
 
 # Search for user, maybe return all users on empty search?
 @router.get("/search", response_model=List[Username])
-def search_users(username: str):
+def search_users(username: Optional[str] = None):
+
     with db.engine.begin() as connection:
 
-        result = connection.execute(
-            sqlalchemy.text(
-            """
-            SELECT username
-            FROM users
-            WHERE LOWER(username) LIKE LOWER(:username)
-            """
-            ), [{"username": f"{username}%"}]
+        if not username:
+            # If no username is provided, return all usernames
+            result = connection.execute(
+                sqlalchemy.text(
+                    """
+                    SELECT username
+                    FROM users
+                    """
+                )
             ).fetchall()
 
-        
+        else:
+            # If username is provided, search for usernames that start with the given string
+            result = connection.execute(
+                sqlalchemy.text(
+                """
+                SELECT username
+                FROM users
+                WHERE LOWER(username) LIKE LOWER(:username)
+                """
+                ), [{"username": f"{username}%"}]
+                ).fetchall()
+
 
         if not result:
             raise HTTPException(status_code=404, detail="No users found. Please try again.")
