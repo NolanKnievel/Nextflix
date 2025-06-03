@@ -196,10 +196,12 @@ def search_users(username: str):
             """
             SELECT username
             FROM users
-            WHERE username ILIKE :username
+            WHERE LOWER(username) LIKE LOWER(:username)
             """
-            ), [{"username": f"%{username}%"}]
+            ), [{"username": f"{username}%"}]
             ).fetchall()
+
+        
 
         if not result:
             raise HTTPException(status_code=404, detail="No users found. Please try again.")
