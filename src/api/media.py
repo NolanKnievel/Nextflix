@@ -81,7 +81,7 @@ def search_media(media_name: str, media_type: str):
                 WHERE title LIKE :media_name AND media_type = :media_type
                 """
             ),
-            {"media_name": '%' + media_name + '%', "media_type": media_type}  # Corrected parameter passing
+            [{"media_name": '%' + media_name + '%', "media_type": media_type}]  # Corrected parameter passing
         ).fetchall()
         
         if not search_results:  # Use `not search_results` to check for empty results
@@ -93,44 +93,43 @@ def search_media(media_name: str, media_type: str):
 
 # view media
 @router.get("/view", response_model=List[MediaInfo])
-def view_media(media_title: Optional[str] = None):
+def view_media(media_title: Optional[str] = None,
+               director: Optional[str] = None,
+               media_type: Optional[str] = None):
+    
+    filters = []
+    parameters = {}
+    
+    if media_title:
+        filters.append("media.title ILIKE :media_title")
+        parameters['media_title'] = f'%{media_title}%'
+    if media_type:
+        filters.append("media.media_type = :media_type")
+        parameters['media_type'] = media_type.lower()
+
+    if director:
+        filters.append("media.director = :director")
+        parameters['director'] = f'%{director}%'
+
+    filter_string = ""
+    if filters:
+        filter_string = "WHERE " + " AND ".join(filters)
+    
+    query = f"""
+        WITH avgs AS (
+            SELECT media_id, AVG(rating) as avg_rev
+            FROM reviews
+            GROUP BY media_id
+        )
+        SELECT media.media_id,media.title,COALESCE(avgs.avg_rev, 0) as average_rating, media.director
+        FROM media
+        LEFT JOIN avgs ON media.media_id = avgs.media_id
+        {filter_string}
+        ORDER BY average_rating DESC, media.title    
+    """
     with db.engine.begin() as connection:
-
-        # If media_title is provided, fetch media with that similar titles and their average ratings
-        if media_title:
-            media = connection.execute(
-                sqlalchemy.text(
-                    """
-                    WITH avgs AS (
-                        SELECT media_id, AVG(rating) as avg_rev
-                        FROM reviews
-                        GROUP BY media_id
-                    )
-                    SELECT media.media_id, media.title, COALESCE(avgs.avg_rev, 0) as average_rating, media.director
-                    FROM media
-                    LEFT JOIN avgs ON media.media_id = avgs.media_id
-                    WHERE media.title ILIKE :media_title
-                    ORDER BY average_rating DESC, media.title
-                    """
-                ), [{'media_title': f'%{media_title}%'}]  # Use ILIKE for case-insensitive search
-            ).fetchall()
-
-        # If media_title is None, fetch all media with their average ratings
-        elif media_title is None:
-            media = connection.execute(
-                sqlalchemy.text(
-                    """
-                    WITH avgs AS (
-                        SELECT media_id, AVG(rating) as avg_rev
-                        FROM reviews
-                        GROUP BY media_id
-                    )
-                    SELECT media.media_id, media.title, COALESCE(avgs.avg_rev, 0) as average_rating, media.director
-                    FROM media
-                    LEFT JOIN avgs ON media.media_id = avgs.media_id
-                    ORDER BY average_rating DESC, media.title
-                    """
-                )).fetchall()
+        media = connection.execute(sqlalchemy.text(query),parameters)
+        
         if not media:
             raise HTTPException(status_code=404, detail="Media not found")
         

@@ -114,7 +114,7 @@ def add_to_watchlist(username: str, title: str, have_watched: bool=False):
         ).fetchone()
 
         if existing_entry:
-            return
+            raise HTTPException(status_code = 409, detail = "Media already in watchlist")
         
         # add to watchlist
         connection.execute(
