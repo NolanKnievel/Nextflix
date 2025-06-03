@@ -91,10 +91,8 @@ GET /media/{username}/recommendations
 
 
 
-
-
 **Of all our routes, the search users route, GET /users/search, took the longest at 127.03ms.**
-
+**The next two slowest were add to watchlist POST /users/{username}/watchlist at 123.76ms and view media GET /media/view at 125.96ms**
 
 
 ## Adding index
