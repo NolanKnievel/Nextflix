@@ -82,7 +82,7 @@ def search_media(media_name: str, media_type: str):
                 WHERE title LIKE :media_name AND media_type = :media_type
                 """
             ),
-            {"media_name": '%' + media_name + '%', "media_type": media_type}  # Corrected parameter passing
+            [{"media_name": '%' + media_name + '%', "media_type": media_type}]  # Corrected parameter passing
         ).fetchall()
         
         if not search_results:  # Use `not search_results` to check for empty results
