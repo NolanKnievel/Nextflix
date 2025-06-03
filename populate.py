@@ -58,7 +58,7 @@ def populate():
         )
 
         # create media
-        for i in range(1, 101):
+        for i in range(1, 501):
             title = f'show{i}'
             director = f'director{i}'
             connection.execute(
@@ -67,7 +67,7 @@ def populate():
                 ),
                 {"title": title, "director": director}
             )
-        for i in range(101, 201):
+        for i in range(501, 1001):
             title = f'movie{i}'
             director = f'director{i}'
             connection.execute(
