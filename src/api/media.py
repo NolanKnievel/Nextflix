@@ -108,7 +108,7 @@ def view_media(media_title: Optional[str] = None,
         parameters['media_type'] = media_type.lower()
 
     if director:
-        filters.append("media.director = :director")
+        filters.append("media.director ILIKE :director")
         parameters['director'] = f'%{director}%'
 
     filter_string = ""
