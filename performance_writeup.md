@@ -1,5 +1,5 @@
 ## Fake Data Modeling
-    Data population code can be found at ./populate.py
+    Data population code can be found at [populate.py](https://github.com/NolanKnievel/Nextflix/blob/main/populate.py)
 
     To create a million rows, we don't necessarily need a million users in our DB. We opted to create 100,000 users, each user having a random value of 0-10 reviews, friends, and items in their watchlist. With an average of 5 for these random values, we end up with 100,000 rows for users and about 500,000 rows for watchlists and reviews. 
 
